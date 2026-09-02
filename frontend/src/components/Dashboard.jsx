@@ -18,6 +18,19 @@ function Dashboard() {
             .catch((err) => console.error('Error fetching tasks:', err));
     }, []);
 
+    const handleStatusChange = (taskId, newStatus) => {
+        fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: newStatus })
+        })
+            .then((res) => res.json())
+            .then(() => {
+                setTasks(tasks.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)));
+            })
+            .catch((err) => console.error('Error updating task:', err));
+    };
+
     return (
         <div className="dashboard">
             <h2>Projects</h2>
@@ -27,7 +40,18 @@ function Dashboard() {
                     <p>{project.description}</p>
                     <ul>
                         {tasks.filter((t) => t.project_id === project.id).map((t) => (
-                            <li key={t.id}>{t.title} — {t.status}</li>
+                            <li key={t.id}>
+                                {t.title} —{' '}
+                                <select
+                                    value={t.status}
+                                    onChange={(e) => handleStatusChange(t.id, e.target.value)}
+                                >
+                                    <option value="To Do">To Do</option>
+                                    <option value="In Progress">In Progress</option>
+                                    <option value="Blocked">Blocked</option>
+                                    <option value="Done">Done</option>
+                                </select>
+                            </li>
                         ))}
                     </ul>
                     <TaskForm projectId={project.id} onTaskAdded={(newTask) => setTasks([...tasks, newTask])} />

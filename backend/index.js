@@ -42,6 +42,22 @@ app.get('/api/tasks', (req, res) => {
             }
         );
     });
+
+    app.put('/api/tasks/:id', (req, res) => {
+        const { status } = req.body;
+        const { id } = req.params;
+        db.query(
+            'UPDATE tasks SET status = ? WHERE id = ?',
+            [status, id],
+            (err) => {
+                if (err) {
+                    res.status(500).json({ error: 'Failed to update task' });
+                    return;
+                }
+                res.json({ id, status });
+            }
+        );
+    });
 });
 
 app.listen(5000, () => {

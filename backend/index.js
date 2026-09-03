@@ -58,6 +58,17 @@ app.get('/api/tasks', (req, res) => {
             }
         );
     });
+
+    app.delete('/api/tasks/:id', (req, res) => {
+        const { id } = req.params;
+        db.query('DELETE FROM tasks WHERE id = ?', [id], (err) => {
+            if (err) {
+                res.status(500).json({ error: 'Failed to delete task' });
+                return;
+            }
+            res.json({ id });
+        });
+    });
 });
 
 app.listen(5000, () => {

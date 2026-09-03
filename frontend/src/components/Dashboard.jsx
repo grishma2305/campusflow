@@ -5,6 +5,7 @@ function Dashboard() {
 
     const [projects, setProjects] = useState([]);
     const [tasks, setTasks] = useState([]);
+    const statuses = ['To Do', 'In Progress', 'Blocked', 'Done'];
 
     useEffect(() => {
         fetch('http://localhost:5000/api/projects')
@@ -49,25 +50,56 @@ function Dashboard() {
                 <div key={project.id} className="project-card">
                     <h3>{project.name}</h3>
                     <p>{project.description}</p>
-                    <ul>
-                        {tasks.filter((t) => t.project_id === project.id).map((t) => (
-                            <li key={t.id}>
-                                {t.title} —{' '}
-                                <select
-                                    value={t.status}
-                                    onChange={(e) => handleStatusChange(t.id, e.target.value)}
-                                >
-                                    <option value="To Do">To Do</option>
-                                    <option value="In Progress">In Progress</option>
-                                    <option value="Blocked">Blocked</option>
-                                    <option value="Done">Done</option>
-                                </select>
-                                <button onClick={() => handleDeleteTask(t.id)} style={{ marginLeft: '8px' }}>
-                                    Delete
-                                </button>
-                            </li>
+                    <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                        {statuses.map((status) => (
+                            <div
+                                key={status}
+                                style={{
+                                    flex: 1,
+                                    background: '#f9f9f9',
+                                    borderRadius: '6px',
+                                    padding: '8px',
+                                    minHeight: '80px'
+                                }}
+                            >
+                                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{status}</h4>
+                                {tasks
+                                    .filter((t) => t.project_id === project.id && t.status === status)
+                                    .map((t) => (
+                                        <div
+                                            key={t.id}
+                                            style={{
+                                                background: 'white',
+                                                border: '1px solid #ddd',
+                                                borderRadius: '4px',
+                                                padding: '6px',
+                                                marginBottom: '6px',
+                                                fontSize: '13px'
+                                            }}
+                                        >
+                                            {t.title}
+                                            <div style={{ marginTop: '4px' }}>
+                                                <select
+                                                    value={t.status}
+                                                    onChange={(e) => handleStatusChange(t.id, e.target.value)}
+                                                    style={{ fontSize: '12px' }}
+                                                >
+                                                    {statuses.map((s) => (
+                                                        <option key={s} value={s}>{s}</option>
+                                                    ))}
+                                                </select>
+                                                <button
+                                                    onClick={() => handleDeleteTask(t.id)}
+                                                    style={{ marginLeft: '4px', fontSize: '12px' }}
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                            </div>
                         ))}
-                    </ul>
+                    </div>
                     <TaskForm projectId={project.id} onTaskAdded={(newTask) => setTasks([...tasks, newTask])} />
                     <p>Starts: {project.start_date?.slice(0, 10)} | Ends: {project.end_date?.slice(0, 10)}</p>
                 </div>))

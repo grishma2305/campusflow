@@ -1,3 +1,4 @@
+const API_URL = import.meta.env.VITE_API_URL;
 import TaskForm from './TaskForm';
 import { useState, useEffect } from 'react';
 
@@ -8,19 +9,19 @@ function Dashboard() {
     const statuses = ['To Do', 'In Progress', 'Blocked', 'Done'];
 
     useEffect(() => {
-        fetch('http://localhost:5000/api/projects')
+        fetch(`${API_URL}/api/projects`)
             .then((res) => res.json())
             .then((data) => setProjects(data))
             .catch((err) => console.error('Error fetching projects:', err));
 
-        fetch('http://localhost:5000/api/tasks')
+        fetch(`${API_URL}/api/tasks`)
             .then((res) => res.json())
             .then((data) => setTasks(data))
             .catch((err) => console.error('Error fetching tasks:', err));
     }, []);
 
     const handleStatusChange = (taskId, newStatus) => {
-        fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+        fetch(`${API_URL}/api/tasks/${taskId}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ status: newStatus })
@@ -33,7 +34,7 @@ function Dashboard() {
     };
 
     const handleDeleteTask = (taskId) => {
-        fetch(`http://localhost:5000/api/tasks/${taskId}`, {
+        fetch(`${API_URL}/api/tasks/${taskId}`, {
             method: 'DELETE'
         })
             .then((res) => res.json())

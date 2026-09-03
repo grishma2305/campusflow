@@ -1,3 +1,4 @@
+const API_URL = import.meta.env.VITE_API_URL;
 import { useState } from 'react';
 
 function TaskForm({ projectId, onTaskAdded }) {
@@ -7,7 +8,7 @@ function TaskForm({ projectId, onTaskAdded }) {
         e.preventDefault();
         if (!title.trim()) return;
 
-        fetch('http://localhost:5000/api/tasks', {
+        fetch(`${API_URL}/api/tasks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ project_id: projectId, title, status: 'To Do' })

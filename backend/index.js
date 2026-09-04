@@ -29,16 +29,16 @@ app.get('/api/tasks', (req, res) => {
     });
 
     app.post('/api/tasks', (req, res) => {
-        const { project_id, title, status } = req.body;
+        const { project_id, title, status, priority, due_date } = req.body;
         db.query(
-            'INSERT INTO tasks (project_id, title, status) VALUES (?, ?, ?)',
-            [project_id, title, status || 'To Do'],
+            'INSERT INTO tasks (project_id, title, status, priority, due_date) VALUES (?, ?, ?, ?, ?)',
+            [project_id, title, status || 'To Do', priority || 'Medium', due_date || null],
             (err, result) => {
                 if (err) {
                     res.status(500).json({ error: 'Failed to create task' });
                     return;
                 }
-                res.json({ id: result.insertId, project_id, title, status: status || 'To Do' });
+                res.json({ id: result.insertId, project_id, title, status: status || 'To Do', priority: priority || 'Medium', due_date: due_date || null });
             }
         );
     });

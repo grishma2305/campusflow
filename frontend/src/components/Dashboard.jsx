@@ -79,6 +79,10 @@ function Dashboard() {
                                             }}
                                         >
                                             {t.title}
+                                            <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                {t.priority && <span style={{ whiteSpace: 'nowrap' }}>Priority: {t.priority}</span>}
+                                                {t.due_date && <span style={{ whiteSpace: 'nowrap' }}>Due: {t.due_date.split('T')[0]}</span>}
+                                            </div>
                                             <div style={{ marginTop: '4px' }}>
                                                 <select
                                                     value={t.status}

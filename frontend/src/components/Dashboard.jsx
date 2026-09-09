@@ -66,42 +66,45 @@ function Dashboard() {
                                 <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{status}</h4>
                                 {tasks
                                     .filter((t) => t.project_id === project.id && t.status === status)
-                                    .map((t) => (
-                                        <div
-                                            key={t.id}
-                                            style={{
-                                                background: 'white',
-                                                border: '1px solid #ddd',
-                                                borderRadius: '4px',
-                                                padding: '6px',
-                                                marginBottom: '6px',
-                                                fontSize: '13px'
-                                            }}
-                                        >
-                                            {t.title}
-                                            <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                                {t.priority && <span style={{ whiteSpace: 'nowrap' }}>Priority: {t.priority}</span>}
-                                                {t.due_date && <span style={{ whiteSpace: 'nowrap' }}>Due: {t.due_date.split('T')[0]}</span>}
+                                    .map((t) => {
+                                        const isOverdue = t.due_date && new Date(t.due_date) < new Date() && t.status !== 'Done';
+                                        return (
+                                            <div
+                                                key={t.id}
+                                                style={{
+                                                    background: 'white',
+                                                    border: isOverdue ? '1px solid #e53935' : '1px solid #ddd',
+                                                    borderRadius: '4px',
+                                                    padding: '6px',
+                                                    marginBottom: '6px',
+                                                    fontSize: '13px'
+                                                }}
+                                            >
+                                                {t.title}
+                                                <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                                                    {t.priority && <span style={{ whiteSpace: 'nowrap' }}>Priority: {t.priority}</span>}
+                                                    {t.due_date && <span style={{ whiteSpace: 'nowrap', color: isOverdue ? '#e53935' : 'inherit', fontWeight: isOverdue ? 'bold' : 'normal' }}>Due: {t.due_date.split('T')[0]}</span>}
+                                                </div>
+                                                <div style={{ marginTop: '4px' }}>
+                                                    <select
+                                                        value={t.status}
+                                                        onChange={(e) => handleStatusChange(t.id, e.target.value)}
+                                                        style={{ fontSize: '12px' }}
+                                                    >
+                                                        {statuses.map((s) => (
+                                                            <option key={s} value={s}>{s}</option>
+                                                        ))}
+                                                    </select>
+                                                    <button
+                                                        onClick={() => handleDeleteTask(t.id)}
+                                                        style={{ marginLeft: '4px', fontSize: '12px' }}
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <div style={{ marginTop: '4px' }}>
-                                                <select
-                                                    value={t.status}
-                                                    onChange={(e) => handleStatusChange(t.id, e.target.value)}
-                                                    style={{ fontSize: '12px' }}
-                                                >
-                                                    {statuses.map((s) => (
-                                                        <option key={s} value={s}>{s}</option>
-                                                    ))}
-                                                </select>
-                                                <button
-                                                    onClick={() => handleDeleteTask(t.id)}
-                                                    style={{ marginLeft: '4px', fontSize: '12px' }}
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                             </div>
                         ))}
                     </div>

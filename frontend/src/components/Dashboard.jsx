@@ -59,6 +59,19 @@ function Dashboard() {
             .catch((err) => console.error('Error updating due date:', err));
     };
 
+    const handleDescriptionChange = (taskId, newDescription) => {
+        fetch(`${API_URL}/api/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ description: newDescription || null })
+        })
+            .then((res) => res.json())
+            .then(() => {
+                setTasks(tasks.map((t) => (t.id === taskId ? { ...t, description: newDescription } : t)));
+            })
+            .catch((err) => console.error('Error updating description:', err));
+    };
+
     const handleDeleteTask = (taskId) => {
         fetch(`${API_URL}/api/tasks/${taskId}`, {
             method: 'DELETE'
@@ -107,6 +120,13 @@ function Dashboard() {
                                                 }}
                                             >
                                                 {t.title}
+                                                <textarea
+                                                    value={t.description || ''}
+                                                    onChange={(e) => handleDescriptionChange(t.id, e.target.value)}
+                                                    placeholder="Add description..."
+                                                    style={{ display: 'block', width: '100%', maxWidth: '160px', marginTop: '4px', padding: '3px', fontSize: '11px', fontFamily: 'inherit', border: '1px solid #eee', borderRadius: '3px', resize: 'vertical' }}
+                                                    rows={2}
+                                                />
                                                 <div style={{ fontSize: '11px', marginTop: '4px', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
                                                     <select
                                                         value={t.priority || 'Medium'}

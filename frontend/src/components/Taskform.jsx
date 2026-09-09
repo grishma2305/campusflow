@@ -5,6 +5,7 @@ function TaskForm({ projectId, onTaskAdded }) {
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState('Medium');
     const [dueDate, setDueDate] = useState('');
+    const [description, setDescription] = useState('');
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -13,12 +14,13 @@ function TaskForm({ projectId, onTaskAdded }) {
         fetch(`${API_URL}/api/tasks`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ project_id: projectId, title, status: 'To Do', priority, due_date: dueDate || null })
+            body: JSON.stringify({ project_id: projectId, title, status: 'To Do', priority, due_date: dueDate || null, description: description || null })
         })
             .then((res) => res.json())
             .then((newTask) => {
                 onTaskAdded(newTask);
                 setTitle('');
+                setDescription('');
             })
             .catch((err) => console.error('Error adding task:', err));
     };
@@ -31,6 +33,13 @@ function TaskForm({ projectId, onTaskAdded }) {
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="New task title"
                 style={{ padding: '4px', marginRight: '4px' }}
+            />
+            <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Description (optional)"
+                style={{ display: 'block', width: '100%', maxWidth: '300px', marginTop: '4px', marginBottom: '4px', padding: '4px', fontSize: '12px', fontFamily: 'inherit' }}
+                rows={2}
             />
             <select
                 value={priority}

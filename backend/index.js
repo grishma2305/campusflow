@@ -29,22 +29,22 @@ app.get('/api/tasks', (req, res) => {
     });
 
     app.post('/api/tasks', (req, res) => {
-        const { project_id, title, status, priority, due_date } = req.body;
+        const { project_id, title, status, priority, due_date, description } = req.body;
         db.query(
-            'INSERT INTO tasks (project_id, title, status, priority, due_date) VALUES (?, ?, ?, ?, ?)',
-            [project_id, title, status || 'To Do', priority || 'Medium', due_date || null],
+            'INSERT INTO tasks (project_id, title, status, priority, due_date, description) VALUES (?, ?, ?, ?, ?, ?)',
+            [project_id, title, status || 'To Do', priority || 'Medium', due_date || null, description || null],
             (err, result) => {
                 if (err) {
                     res.status(500).json({ error: 'Failed to create task' });
                     return;
                 }
-                res.json({ id: result.insertId, project_id, title, status: status || 'To Do', priority: priority || 'Medium', due_date: due_date || null });
+                res.json({ id: result.insertId, project_id, title, status: status || 'To Do', priority: priority || 'Medium', due_date: due_date || null, description: description || null });
             }
         );
     });
 
     app.put('/api/tasks/:id', (req, res) => {
-        const { status, priority, due_date } = req.body;
+        const { status, priority, due_date, description } = req.body;
         const { id } = req.params;
 
         const fields = [];
@@ -62,6 +62,10 @@ app.get('/api/tasks', (req, res) => {
             fields.push('due_date = ?');
             values.push(due_date || null);
         }
+        if (description !== undefined) {
+            fields.push('description = ?');
+            values.push(description || null);
+        }
 
         if (fields.length === 0) {
             res.status(400).json({ error: 'No fields to update' });
@@ -78,7 +82,7 @@ app.get('/api/tasks', (req, res) => {
                     res.status(500).json({ error: 'Failed to update task' });
                     return;
                 }
-                res.json({ id, status, priority, due_date });
+                res.json({ id, status, priority, due_date, description });
             }
         );
     });

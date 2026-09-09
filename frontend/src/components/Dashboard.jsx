@@ -33,6 +33,32 @@ function Dashboard() {
             .catch((err) => console.error('Error updating task:', err));
     };
 
+    const handlePriorityChange = (taskId, newPriority) => {
+        fetch(`${API_URL}/api/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ priority: newPriority })
+        })
+            .then((res) => res.json())
+            .then(() => {
+                setTasks(tasks.map((t) => (t.id === taskId ? { ...t, priority: newPriority } : t)));
+            })
+            .catch((err) => console.error('Error updating priority:', err));
+    };
+
+    const handleDueDateChange = (taskId, newDueDate) => {
+        fetch(`${API_URL}/api/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ due_date: newDueDate || null })
+        })
+            .then((res) => res.json())
+            .then(() => {
+                setTasks(tasks.map((t) => (t.id === taskId ? { ...t, due_date: newDueDate } : t)));
+            })
+            .catch((err) => console.error('Error updating due date:', err));
+    };
+
     const handleDeleteTask = (taskId) => {
         fetch(`${API_URL}/api/tasks/${taskId}`, {
             method: 'DELETE'
@@ -81,9 +107,22 @@ function Dashboard() {
                                                 }}
                                             >
                                                 {t.title}
-                                                <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                                                    {t.priority && <span style={{ whiteSpace: 'nowrap' }}>Priority: {t.priority}</span>}
-                                                    {t.due_date && <span style={{ whiteSpace: 'nowrap', color: isOverdue ? '#e53935' : 'inherit', fontWeight: isOverdue ? 'bold' : 'normal' }}>Due: {t.due_date.split('T')[0]}</span>}
+                                                <div style={{ fontSize: '11px', marginTop: '4px', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                    <select
+                                                        value={t.priority || 'Medium'}
+                                                        onChange={(e) => handlePriorityChange(t.id, e.target.value)}
+                                                        style={{ fontSize: '11px' }}
+                                                    >
+                                                        <option value="Low">Low</option>
+                                                        <option value="Medium">Medium</option>
+                                                        <option value="High">High</option>
+                                                    </select>
+                                                    <input
+                                                        type="date"
+                                                        value={t.due_date ? t.due_date.split('T')[0] : ''}
+                                                        onChange={(e) => handleDueDateChange(t.id, e.target.value)}
+                                                        style={{ fontSize: '11px', color: isOverdue ? '#e53935' : 'inherit', fontWeight: isOverdue ? 'bold' : 'normal' }}
+                                                    />
                                                 </div>
                                                 <div style={{ marginTop: '4px' }}>
                                                     <select

@@ -44,17 +44,41 @@ app.get('/api/tasks', (req, res) => {
     });
 
     app.put('/api/tasks/:id', (req, res) => {
-        const { status } = req.body;
+        const { status, priority, due_date } = req.body;
         const { id } = req.params;
+
+        const fields = [];
+        const values = [];
+
+        if (status !== undefined) {
+            fields.push('status = ?');
+            values.push(status);
+        }
+        if (priority !== undefined) {
+            fields.push('priority = ?');
+            values.push(priority);
+        }
+        if (due_date !== undefined) {
+            fields.push('due_date = ?');
+            values.push(due_date || null);
+        }
+
+        if (fields.length === 0) {
+            res.status(400).json({ error: 'No fields to update' });
+            return;
+        }
+
+        values.push(id);
+
         db.query(
-            'UPDATE tasks SET status = ? WHERE id = ?',
-            [status, id],
+            `UPDATE tasks SET ${fields.join(', ')} WHERE id = ?`,
+            values,
             (err) => {
                 if (err) {
                     res.status(500).json({ error: 'Failed to update task' });
                     return;
                 }
-                res.json({ id, status });
+                res.json({ id, status, priority, due_date });
             }
         );
     });

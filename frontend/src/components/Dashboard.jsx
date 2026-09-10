@@ -105,6 +105,10 @@ function Dashboard() {
                                 <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{status}</h4>
                                 {tasks
                                     .filter((t) => t.project_id === project.id && t.status === status)
+                                    .sort((a, b) => {
+                                        const order = { High: 1, Medium: 2, Low: 3 };
+                                        return (order[a.priority] || 2) - (order[b.priority] || 2);
+                                    })
                                     .map((t) => {
                                         const isOverdue = t.due_date && new Date(t.due_date) < new Date() && t.status !== 'Done';
                                         return (

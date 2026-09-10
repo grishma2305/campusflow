@@ -7,6 +7,7 @@ function Dashboard() {
     const [projects, setProjects] = useState([]);
     const [tasks, setTasks] = useState([]);
     const statuses = ['To Do', 'In Progress', 'Blocked', 'Done'];
+    const [priorityFilter, setPriorityFilter] = useState('All');
 
     useEffect(() => {
         fetch(`${API_URL}/api/projects`)
@@ -86,6 +87,19 @@ function Dashboard() {
     return (
         <div className="dashboard">
             <h2>Projects</h2>
+            <div style={{ marginBottom: '12px' }}>
+                <label style={{ marginRight: '6px', fontSize: '13px' }}>Filter by priority:</label>
+                <select
+                    value={priorityFilter}
+                    onChange={(e) => setPriorityFilter(e.target.value)}
+                    style={{ fontSize: '13px' }}
+                >
+                    <option value="All">All</option>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+            </div>
             {projects.map((project) => (
                 <div key={project.id} className="project-card">
                     <h3>{project.name}</h3>
@@ -104,7 +118,7 @@ function Dashboard() {
                             >
                                 <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{status}</h4>
                                 {tasks
-                                    .filter((t) => t.project_id === project.id && t.status === status)
+                                    .filter((t) => t.project_id === project.id && t.status === status && (priorityFilter === 'All' || t.priority === priorityFilter))
                                     .sort((a, b) => {
                                         const order = { High: 1, Medium: 2, Low: 3 };
                                         return (order[a.priority] || 2) - (order[b.priority] || 2);

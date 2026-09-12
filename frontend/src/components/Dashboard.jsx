@@ -1,6 +1,66 @@
 const API_URL = import.meta.env.VITE_API_URL;
 import TaskForm from './TaskForm';
 import { useState, useEffect } from 'react';
+import {
+    DndContext,
+    useDraggable,
+    useDroppable,
+    closestCenter,
+} from '@dnd-kit/core';
+
+function DraggableTask({ id, children }) {
+    const { setNodeRef, transform, isDragging } = useDraggable({ id });
+    const style = {
+        transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
+        opacity: isDragging ? 0.4 : 1,
+        zIndex: isDragging ? 999 : 'auto',
+        position: isDragging ? 'relative' : 'static',
+    };
+    return (
+        <div ref={setNodeRef} style={style}>
+            {children}
+        </div>
+    );
+}
+
+function DragHandle({ id }) {
+    const { attributes, listeners } = useDraggable({ id });
+    return (
+        <div
+            {...listeners}
+            {...attributes}
+            style={{
+                cursor: 'grab',
+                fontSize: '12px',
+                color: '#999',
+                marginBottom: '2px',
+                userSelect: 'none',
+            }}
+            title="Drag to move"
+        >
+            ⠿
+        </div>
+    );
+}
+
+function DroppableColumn({ id, children }) {
+    const { setNodeRef, isOver } = useDroppable({ id });
+    return (
+        <div
+            ref={setNodeRef}
+            style={{
+                flex: 1,
+                background: isOver ? '#eef6ff' : '#f9f9f9',
+                borderRadius: '6px',
+                padding: '8px',
+                minHeight: '80px',
+                transition: 'background 0.15s',
+            }}
+        >
+            {children}
+        </div>
+    );
+}
 
 function Dashboard() {
 
@@ -33,6 +93,17 @@ function Dashboard() {
                 setTasks(tasks.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)));
             })
             .catch((err) => console.error('Error updating task:', err));
+    };
+
+    const handleDragEnd = (event) => {
+        const { active, over } = event;
+        if (!over) return;
+        const taskId = active.id;
+        const newStatus = over.id;
+        const task = tasks.find((t) => t.id === taskId);
+        if (task && task.status !== newStatus) {
+            handleStatusChange(taskId, newStatus);
+        }
     };
 
     const handlePriorityChange = (taskId, newPriority) => {
@@ -117,99 +188,97 @@ function Dashboard() {
                 <div key={project.id} className="project-card">
                     <h3>{project.name}</h3>
                     <p>{project.description}</p>
-                    <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                        {statuses.map((status) => (
-                            <div
-                                key={status}
-                                style={{
-                                    flex: 1,
-                                    background: '#f9f9f9',
-                                    borderRadius: '6px',
-                                    padding: '8px',
-                                    minHeight: '80px'
-                                }}
-                            >
-                                <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{status}</h4>
-                                {tasks
-                                    .filter((t) => {
-                                        const query = searchQuery.trim().toLowerCase();
-                                        const matchesSearch = query === '' ||
-                                            t.title.toLowerCase().includes(query) ||
-                                            (t.description || '').toLowerCase().includes(query);
-                                        return t.project_id === project.id && t.status === status &&
-                                            (priorityFilter === 'All' || t.priority === priorityFilter) &&
-                                            matchesSearch;
-                                    })
-                                    .sort((a, b) => {
-                                        const order = { High: 1, Medium: 2, Low: 3 };
-                                        return (order[a.priority] || 2) - (order[b.priority] || 2);
-                                    })
-                                    .map((t) => {
-                                        const isOverdue = t.due_date && new Date(t.due_date) < new Date() && t.status !== 'Done';
-                                        return (
-                                            <div
-                                                key={t.id}
-                                                style={{
-                                                    background: 'white',
-                                                    border: isOverdue ? '1px solid #e53935' : '1px solid #ddd',
-                                                    borderRadius: '4px',
-                                                    padding: '6px',
-                                                    marginBottom: '6px',
-                                                    fontSize: '13px'
-                                                }}
-                                            >
-                                                {t.title}
-                                                <textarea
-                                                    value={t.description || ''}
-                                                    onChange={(e) => handleDescriptionChange(t.id, e.target.value)}
-                                                    placeholder="Add description..."
-                                                    style={{ display: 'block', width: '100%', maxWidth: '160px', marginTop: '4px', padding: '3px', fontSize: '11px', fontFamily: 'inherit', border: '1px solid #eee', borderRadius: '3px', resize: 'vertical' }}
-                                                    rows={2}
-                                                />
-                                                <div style={{ fontSize: '11px', marginTop: '4px', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
-                                                    <select
-                                                        value={t.priority || 'Medium'}
-                                                        onChange={(e) => handlePriorityChange(t.id, e.target.value)}
-                                                        style={{ fontSize: '11px' }}
-                                                    >
-                                                        <option value="Low">Low</option>
-                                                        <option value="Medium">Medium</option>
-                                                        <option value="High">High</option>
-                                                    </select>
-                                                    <input
-                                                        type="date"
-                                                        value={t.due_date ? t.due_date.split('T')[0] : ''}
-                                                        onChange={(e) => handleDueDateChange(t.id, e.target.value)}
-                                                        style={{ fontSize: '11px', color: isOverdue ? '#e53935' : 'inherit', fontWeight: isOverdue ? 'bold' : 'normal' }}
-                                                    />
-                                                </div>
-                                                <div style={{ marginTop: '4px' }}>
-                                                    <select
-                                                        value={t.status}
-                                                        onChange={(e) => handleStatusChange(t.id, e.target.value)}
-                                                        style={{ fontSize: '12px' }}
-                                                    >
-                                                        {statuses.map((s) => (
-                                                            <option key={s} value={s}>{s}</option>
-                                                        ))}
-                                                    </select>
-                                                    <button
-                                                        onClick={() => handleDeleteTask(t.id)}
-                                                        style={{ marginLeft: '4px', fontSize: '12px' }}
-                                                    >
-                                                        Delete
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                            </div>
-                        ))}
-                    </div>
+                    <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                            {statuses.map((status) => {
+                                const columnTasks = tasks.filter((t) => {
+                                    const query = searchQuery.trim().toLowerCase();
+                                    const matchesSearch = query === '' ||
+                                        t.title.toLowerCase().includes(query) ||
+                                        (t.description || '').toLowerCase().includes(query);
+                                    return t.project_id === project.id && t.status === status &&
+                                        (priorityFilter === 'All' || t.priority === priorityFilter) &&
+                                        matchesSearch;
+                                });
+                                return (
+                                    <DroppableColumn key={status} id={status}>
+                                        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{status} ({columnTasks.length})</h4>
+                                        {columnTasks
+                                            .sort((a, b) => {
+                                                const order = { High: 1, Medium: 2, Low: 3 };
+                                                return (order[a.priority] || 2) - (order[b.priority] || 2);
+                                            })
+                                            .map((t) => {
+                                                const isOverdue = t.due_date && new Date(t.due_date) < new Date() && t.status !== 'Done';
+                                                return (
+                                                    <DraggableTask key={t.id} id={t.id}>
+                                                        <div
+                                                            style={{
+                                                                background: 'white',
+                                                                border: isOverdue ? '1px solid #e53935' : '1px solid #ddd',
+                                                                borderRadius: '4px',
+                                                                padding: '6px',
+                                                                marginBottom: '6px',
+                                                                fontSize: '13px'
+                                                            }}
+                                                        >
+                                                            <DragHandle id={t.id} />
+                                                            {t.title}
+                                                            <textarea
+                                                                value={t.description || ''}
+                                                                onChange={(e) => handleDescriptionChange(t.id, e.target.value)}
+                                                                placeholder="Add description..."
+                                                                style={{ display: 'block', width: '100%', maxWidth: '160px', marginTop: '4px', padding: '3px', fontSize: '11px', fontFamily: 'inherit', border: '1px solid #eee', borderRadius: '3px', resize: 'vertical' }}
+                                                                rows={2}
+                                                            />
+                                                            <div style={{ fontSize: '11px', marginTop: '4px', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                                <select
+                                                                    value={t.priority || 'Medium'}
+                                                                    onChange={(e) => handlePriorityChange(t.id, e.target.value)}
+                                                                    style={{ fontSize: '11px' }}
+                                                                >
+                                                                    <option value="Low">Low</option>
+                                                                    <option value="Medium">Medium</option>
+                                                                    <option value="High">High</option>
+                                                                </select>
+                                                                <input
+                                                                    type="date"
+                                                                    value={t.due_date ? t.due_date.split('T')[0] : ''}
+                                                                    onChange={(e) => handleDueDateChange(t.id, e.target.value)}
+                                                                    style={{ fontSize: '11px', color: isOverdue ? '#e53935' : 'inherit', fontWeight: isOverdue ? 'bold' : 'normal' }}
+                                                                />
+                                                            </div>
+                                                            <div style={{ marginTop: '4px' }}>
+                                                                <select
+                                                                    value={t.status}
+                                                                    onChange={(e) => handleStatusChange(t.id, e.target.value)}
+                                                                    style={{ fontSize: '12px' }}
+                                                                >
+                                                                    {statuses.map((s) => (
+                                                                        <option key={s} value={s}>{s}</option>
+                                                                    ))}
+                                                                </select>
+                                                                <button
+                                                                    onClick={() => handleDeleteTask(t.id)}
+                                                                    style={{ marginLeft: '4px', fontSize: '12px' }}
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </DraggableTask>
+                                                );
+                                            })}
+                                    </DroppableColumn>
+                                );
+                            })}
+                        </div>
+                    </DndContext>
                     <TaskForm projectId={project.id} onTaskAdded={(newTask) => setTasks([...tasks, newTask])} />
                     <p>Starts: {project.start_date?.slice(0, 10)} | Ends: {project.end_date?.slice(0, 10)}</p>
-                </div>))
-            }
-        </div>);
+                </div>
+            ))}
+        </div>
+    );
 }
 export default Dashboard;

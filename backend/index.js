@@ -20,6 +20,31 @@ app.get('/api/projects', (req, res) => {
     });
 });
 
+app.post('/api/projects', (req, res) => {
+    const { name, description, start_date, end_date } = req.body;
+    if (!name || !name.trim()) {
+        res.status(400).json({ error: 'Project name is required' });
+        return;
+    }
+    db.query(
+        'INSERT INTO projects (name, description, start_date, end_date) VALUES (?, ?, ?, ?)',
+        [name, description || null, start_date || null, end_date || null],
+        (err, result) => {
+            if (err) {
+                res.status(500).json({ error: 'Failed to create project' });
+                return;
+            }
+            res.json({
+                id: result.insertId,
+                name,
+                description: description || null,
+                start_date: start_date || null,
+                end_date: end_date || null,
+            });
+        }
+    );
+});
+
 app.get('/api/tasks', (req, res) => {
     db.query('SELECT * FROM tasks', (err, results) => {
         if (err) {

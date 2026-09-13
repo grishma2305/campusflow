@@ -1,5 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL;
 import TaskForm from './TaskForm';
+import ProjectForm from './ProjectForm';
 import { useState, useEffect } from 'react';
 import {
     DndContext,
@@ -95,6 +96,10 @@ function Dashboard() {
             .catch((err) => console.error('Error updating task:', err));
     };
 
+    const handleProjectAdded = (newProject) => {
+        setProjects([...projects, newProject]);
+    };
+
     const handleDragEnd = (event) => {
         const { active, over } = event;
         if (!over) return;
@@ -159,6 +164,7 @@ function Dashboard() {
     return (
         <div className="dashboard">
             <h2>Projects</h2>
+            <ProjectForm onProjectAdded={handleProjectAdded} />
             <div style={{ marginBottom: '12px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <div>
                     <label style={{ marginRight: '6px', fontSize: '13px' }}>Filter by priority:</label>

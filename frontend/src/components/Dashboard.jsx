@@ -212,7 +212,13 @@ function Dashboard() {
                                         {columnTasks
                                             .sort((a, b) => {
                                                 const order = { High: 1, Medium: 2, Low: 3 };
-                                                return (order[a.priority] || 2) - (order[b.priority] || 2);
+                                                const priorityDiff = (order[a.priority] || 2) - (order[b.priority] || 2);
+                                                if (priorityDiff !== 0) return priorityDiff;
+
+                                                if (!a.due_date && !b.due_date) return 0;
+                                                if (!a.due_date) return 1;
+                                                if (!b.due_date) return -1;
+                                                return new Date(a.due_date) - new Date(b.due_date);
                                             })
                                             .map((t) => {
                                                 const isOverdue = t.due_date && new Date(t.due_date) < new Date() && t.status !== 'Done';

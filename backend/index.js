@@ -124,6 +124,23 @@ app.get('/api/tasks', (req, res) => {
     });
 });
 
+app.delete('/api/projects/:id', (req, res) => {
+    const { id } = req.params;
+    db.query('DELETE FROM tasks WHERE project_id = ?', [id], (err) => {
+        if (err) {
+            res.status(500).json({ error: 'Failed to delete project tasks' });
+            return;
+        }
+        db.query('DELETE FROM projects WHERE id = ?', [id], (err2, result) => {
+            if (err2) {
+                res.status(500).json({ error: 'Failed to delete project' });
+                return;
+            }
+            res.json({ id, deleted: true });
+        });
+    });
+});
+
 app.listen(5000, () => {
     console.log('Server running on port 5000');
 });

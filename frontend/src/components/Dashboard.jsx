@@ -161,6 +161,21 @@ function Dashboard() {
             .catch((err) => console.error('Error deleting task:', err));
     };
 
+    const handleDeleteProject = (projectId) => {
+        if (!window.confirm('Delete this project and all its tasks? This cannot be undone.')) {
+            return;
+        }
+        fetch(`${API_URL}/api/projects/${projectId}`, {
+            method: 'DELETE'
+        })
+            .then((res) => res.json())
+            .then(() => {
+                setProjects(projects.filter((p) => p.id !== projectId));
+                setTasks(tasks.filter((t) => t.project_id !== projectId));
+            })
+            .catch((err) => console.error('Error deleting project:', err));
+    };
+
     return (
         <div className="dashboard">
             <h2>Projects</h2>
@@ -192,7 +207,15 @@ function Dashboard() {
             </div>
             {projects.map((project) => (
                 <div key={project.id} className="project-card">
-                    <h3>{project.name}</h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h3 style={{ margin: 0 }}>{project.name}</h3>
+                        <button
+                            onClick={() => handleDeleteProject(project.id)}
+                            style={{ fontSize: '12px', color: '#e53935' }}
+                        >
+                            Delete Project
+                        </button>
+                    </div>
                     <p>{project.description}</p>
                     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                         <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>

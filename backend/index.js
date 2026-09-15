@@ -14,6 +14,23 @@ app.get('/', (req, res) => {
     res.send('CampusFlow backend is running');
 });
 
+function requireAuth(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        res.status(401).json({ error: 'Authentication required' });
+        return;
+    }
+    const token = authHeader.split(' ')[1];
+    jwt.verify(token, JWT_SECRET, (err, decoded) => {
+        if (err) {
+            res.status(401).json({ error: 'Invalid or expired token' });
+            return;
+        }
+        req.user = decoded;
+        next();
+    });
+}
+
 // ---- AUTH ROUTES ----
 
 app.post('/api/auth/signup', (req, res) => {
@@ -107,7 +124,7 @@ app.get('/api/projects', (req, res) => {
     });
 });
 
-app.post('/api/projects', (req, res) => {
+app.post('/api/projects', requireAuth, (req, res) => {
     const { name, description, start_date, end_date } = req.body;
     if (!name || !name.trim()) {
         res.status(400).json({ error: 'Project name is required' });
@@ -132,7 +149,7 @@ app.post('/api/projects', (req, res) => {
     );
 });
 
-app.delete('/api/projects/:id', (req, res) => {
+app.delete('/api/projects/:id', requireAuth, (req, res) => {
     const { id } = req.params;
     db.query('DELETE FROM tasks WHERE project_id = ?', [id], (err) => {
         if (err) {
@@ -161,7 +178,7 @@ app.get('/api/tasks', (req, res) => {
     });
 });
 
-app.post('/api/tasks', (req, res) => {
+app.post('/api/tasks', requireAuth, (req, res) => {
     const { project_id, title, status, priority, due_date, description } = req.body;
     db.query(
         'INSERT INTO tasks (project_id, title, status, priority, due_date, description) VALUES (?, ?, ?, ?, ?, ?)',
@@ -176,7 +193,7 @@ app.post('/api/tasks', (req, res) => {
     );
 });
 
-app.put('/api/tasks/:id', (req, res) => {
+app.put('/api/tasks/:id', requireAuth, (req, res) => {
     const { status, priority, due_date, description } = req.body;
     const { id } = req.params;
 
@@ -220,7 +237,7 @@ app.put('/api/tasks/:id', (req, res) => {
     );
 });
 
-app.delete('/api/tasks/:id', (req, res) => {
+app.delete('/api/tasks/:id', requireAuth, (req, res) => {
     const { id } = req.params;
     db.query('DELETE FROM tasks WHERE id = ?', [id], (err) => {
         if (err) {

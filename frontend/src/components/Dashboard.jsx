@@ -63,7 +63,7 @@ function DroppableColumn({ id, children }) {
     );
 }
 
-function Dashboard() {
+function Dashboard({ token }) {
 
     const [projects, setProjects] = useState([]);
     const [tasks, setTasks] = useState([]);
@@ -86,7 +86,10 @@ function Dashboard() {
     const handleStatusChange = (taskId, newStatus) => {
         fetch(`${API_URL}/api/tasks/${taskId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ status: newStatus })
         })
             .then((res) => res.json())
@@ -114,7 +117,10 @@ function Dashboard() {
     const handlePriorityChange = (taskId, newPriority) => {
         fetch(`${API_URL}/api/tasks/${taskId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ priority: newPriority })
         })
             .then((res) => res.json())
@@ -127,7 +133,10 @@ function Dashboard() {
     const handleDueDateChange = (taskId, newDueDate) => {
         fetch(`${API_URL}/api/tasks/${taskId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ due_date: newDueDate || null })
         })
             .then((res) => res.json())
@@ -140,7 +149,10 @@ function Dashboard() {
     const handleDescriptionChange = (taskId, newDescription) => {
         fetch(`${API_URL}/api/tasks/${taskId}`, {
             method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ description: newDescription || null })
         })
             .then((res) => res.json())
@@ -152,7 +164,10 @@ function Dashboard() {
 
     const handleDeleteTask = (taskId) => {
         fetch(`${API_URL}/api/tasks/${taskId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
         })
             .then((res) => res.json())
             .then(() => {
@@ -166,7 +181,10 @@ function Dashboard() {
             return;
         }
         fetch(`${API_URL}/api/projects/${projectId}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
         })
             .then((res) => res.json())
             .then(() => {
@@ -179,7 +197,7 @@ function Dashboard() {
     return (
         <div className="dashboard">
             <h2>Projects</h2>
-            <ProjectForm onProjectAdded={handleProjectAdded} />
+            <ProjectForm onProjectAdded={handleProjectAdded} token={token} />
             <div style={{ marginBottom: '12px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <div>
                     <label style={{ marginRight: '6px', fontSize: '13px' }}>Filter by priority:</label>
@@ -309,7 +327,7 @@ function Dashboard() {
                             })}
                         </div>
                     </DndContext>
-                    <TaskForm projectId={project.id} onTaskAdded={(newTask) => setTasks([...tasks, newTask])} />
+                    <TaskForm projectId={project.id} onTaskAdded={(newTask) => setTasks([...tasks, newTask])} token={token} />
                     <p>Starts: {project.start_date?.slice(0, 10)} | Ends: {project.end_date?.slice(0, 10)}</p>
                 </div>
             ))}

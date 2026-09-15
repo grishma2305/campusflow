@@ -1,7 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL;
 import { useState } from 'react';
 
-function ProjectForm({ onProjectAdded }) {
+function ProjectForm({ onProjectAdded, token }) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [startDate, setStartDate] = useState('');
@@ -17,7 +17,10 @@ function ProjectForm({ onProjectAdded }) {
         setError('');
         fetch(`${API_URL}/api/projects`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({
                 name,
                 description: description || null,

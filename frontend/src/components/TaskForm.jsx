@@ -1,7 +1,7 @@
 const API_URL = import.meta.env.VITE_API_URL;
 import { useState } from 'react';
 
-function TaskForm({ projectId, onTaskAdded }) {
+function TaskForm({ projectId, onTaskAdded, token }) {
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState('Medium');
     const [dueDate, setDueDate] = useState('');
@@ -18,7 +18,10 @@ function TaskForm({ projectId, onTaskAdded }) {
 
         fetch(`${API_URL}/api/tasks`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
             body: JSON.stringify({ project_id: projectId, title, status: 'To Do', priority, due_date: dueDate || null, description: description || null })
         })
             .then((res) => {

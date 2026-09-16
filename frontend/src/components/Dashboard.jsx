@@ -67,6 +67,7 @@ function Dashboard({ token }) {
 
     const [projects, setProjects] = useState([]);
     const [tasks, setTasks] = useState([]);
+    const [users, setUsers] = useState([]);
     const statuses = ['To Do', 'In Progress', 'Blocked', 'Done'];
     const [priorityFilter, setPriorityFilter] = useState('All');
     const [searchQuery, setSearchQuery] = useState('');
@@ -81,7 +82,14 @@ function Dashboard({ token }) {
             .then((res) => res.json())
             .then((data) => setTasks(data))
             .catch((err) => console.error('Error fetching tasks:', err));
-    }, []);
+
+        fetch(`${API_URL}/api/users`, {
+            headers: { Authorization: `Bearer ${token}` },
+        })
+            .then((res) => res.json())
+            .then((data) => setUsers(data))
+            .catch((err) => console.error('Error fetching users:', err));
+    }, [token]);
 
     const handleStatusChange = (taskId, newStatus) => {
         fetch(`${API_URL}/api/tasks/${taskId}`, {
@@ -160,6 +168,22 @@ function Dashboard({ token }) {
                 setTasks(tasks.map((t) => (t.id === taskId ? { ...t, description: newDescription } : t)));
             })
             .catch((err) => console.error('Error updating description:', err));
+    };
+
+    const handleAssigneeChange = (taskId, newAssigneeId) => {
+        fetch(`${API_URL}/api/tasks/${taskId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({ assigned_to: newAssigneeId || null })
+        })
+            .then((res) => res.json())
+            .then(() => {
+                setTasks(tasks.map((t) => (t.id === taskId ? { ...t, assigned_to: newAssigneeId ? Number(newAssigneeId) : null } : t)));
+            })
+            .catch((err) => console.error('Error updating assignee:', err));
     };
 
     const handleDeleteTask = (taskId) => {
@@ -301,6 +325,18 @@ function Dashboard({ token }) {
                                                                     style={{ fontSize: '11px', color: isOverdue ? '#e53935' : 'inherit', fontWeight: isOverdue ? 'bold' : 'normal' }}
                                                                 />
                                                             </div>
+                                                            <div style={{ fontSize: '11px', marginTop: '4px' }}>
+                                                                <select
+                                                                    value={t.assigned_to || ''}
+                                                                    onChange={(e) => handleAssigneeChange(t.id, e.target.value)}
+                                                                    style={{ fontSize: '11px', width: '100%' }}
+                                                                >
+                                                                    <option value="">Unassigned</option>
+                                                                    {users.map((u) => (
+                                                                        <option key={u.id} value={u.id}>{u.name}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
                                                             <div style={{ marginTop: '4px' }}>
                                                                 <select
                                                                     value={t.status}
@@ -327,7 +363,7 @@ function Dashboard({ token }) {
                             })}
                         </div>
                     </DndContext>
-                    <TaskForm projectId={project.id} onTaskAdded={(newTask) => setTasks([...tasks, newTask])} token={token} />
+                    <TaskForm projectId={project.id} onTaskAdded={(newTask) => setTasks([...tasks, newTask])} token={token} users={users} />
                     <p>Starts: {project.start_date?.slice(0, 10)} | Ends: {project.end_date?.slice(0, 10)}</p>
                 </div>
             ))}

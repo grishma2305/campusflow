@@ -1,11 +1,12 @@
 const API_URL = import.meta.env.VITE_API_URL;
 import { useState } from 'react';
 
-function TaskForm({ projectId, onTaskAdded, token }) {
+function TaskForm({ projectId, onTaskAdded, token, users }) {
     const [title, setTitle] = useState('');
     const [priority, setPriority] = useState('Medium');
     const [dueDate, setDueDate] = useState('');
     const [description, setDescription] = useState('');
+    const [assignedTo, setAssignedTo] = useState('');
     const [error, setError] = useState('');
 
     const handleSubmit = (e) => {
@@ -22,7 +23,7 @@ function TaskForm({ projectId, onTaskAdded, token }) {
                 'Content-Type': 'application/json',
                 Authorization: `Bearer ${token}`,
             },
-            body: JSON.stringify({ project_id: projectId, title, status: 'To Do', priority, due_date: dueDate || null, description: description || null })
+            body: JSON.stringify({ project_id: projectId, title, status: 'To Do', priority, due_date: dueDate || null, description: description || null, assigned_to: assignedTo || null })
         })
             .then((res) => {
                 if (!res.ok) throw new Error('Failed to create task');
@@ -34,6 +35,7 @@ function TaskForm({ projectId, onTaskAdded, token }) {
                 setDescription('');
                 setPriority('Medium');
                 setDueDate('');
+                setAssignedTo('');
             })
             .catch((err) => {
                 console.error('Error adding task:', err);
@@ -73,6 +75,16 @@ function TaskForm({ projectId, onTaskAdded, token }) {
                 onChange={(e) => setDueDate(e.target.value)}
                 style={{ marginRight: '4px' }}
             />
+            <select
+                value={assignedTo}
+                onChange={(e) => setAssignedTo(e.target.value)}
+                style={{ marginRight: '4px' }}
+            >
+                <option value="">Unassigned</option>
+                {users && users.map((u) => (
+                    <option key={u.id} value={u.id}>{u.name}</option>
+                ))}
+            </select>
             <button type="submit">Add Task</button>
         </form>
     );

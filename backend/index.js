@@ -112,6 +112,18 @@ app.post('/api/auth/login', (req, res) => {
     });
 });
 
+// ---- USER ROUTES ----
+
+app.get('/api/users', requireAuth, (req, res) => {
+    db.query('SELECT id, name, email FROM users', (err, results) => {
+        if (err) {
+            res.status(500).json({ error: 'Database query failed' });
+            return;
+        }
+        res.json(results);
+    });
+});
+
 // ---- PROJECT ROUTES ----
 
 app.get('/api/projects', (req, res) => {
@@ -179,22 +191,22 @@ app.get('/api/tasks', (req, res) => {
 });
 
 app.post('/api/tasks', requireAuth, (req, res) => {
-    const { project_id, title, status, priority, due_date, description } = req.body;
+    const { project_id, title, status, priority, due_date, description, assigned_to } = req.body;
     db.query(
-        'INSERT INTO tasks (project_id, title, status, priority, due_date, description) VALUES (?, ?, ?, ?, ?, ?)',
-        [project_id, title, status || 'To Do', priority || 'Medium', due_date || null, description || null],
+        'INSERT INTO tasks (project_id, title, status, priority, due_date, description, assigned_to) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [project_id, title, status || 'To Do', priority || 'Medium', due_date || null, description || null, assigned_to || null],
         (err, result) => {
             if (err) {
                 res.status(500).json({ error: 'Failed to create task' });
                 return;
             }
-            res.json({ id: result.insertId, project_id, title, status: status || 'To Do', priority: priority || 'Medium', due_date: due_date || null, description: description || null });
+            res.json({ id: result.insertId, project_id, title, status: status || 'To Do', priority: priority || 'Medium', due_date: due_date || null, description: description || null, assigned_to: assigned_to || null });
         }
     );
 });
 
 app.put('/api/tasks/:id', requireAuth, (req, res) => {
-    const { status, priority, due_date, description } = req.body;
+    const { status, priority, due_date, description, assigned_to } = req.body;
     const { id } = req.params;
 
     const fields = [];
@@ -216,6 +228,10 @@ app.put('/api/tasks/:id', requireAuth, (req, res) => {
         fields.push('description = ?');
         values.push(description || null);
     }
+    if (assigned_to !== undefined) {
+        fields.push('assigned_to = ?');
+        values.push(assigned_to || null);
+    }
 
     if (fields.length === 0) {
         res.status(400).json({ error: 'No fields to update' });
@@ -232,7 +248,7 @@ app.put('/api/tasks/:id', requireAuth, (req, res) => {
                 res.status(500).json({ error: 'Failed to update task' });
                 return;
             }
-            res.json({ id, status, priority, due_date, description });
+            res.json({ id, status, priority, due_date, description, assigned_to });
         }
     );
 });

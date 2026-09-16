@@ -36,17 +36,6 @@ Built as a solo full-stack project to practice and demonstrate end-to-end web de
 
 ---
 
-## 📸 Screenshots
-
-> _Add a few screenshots or a short GIF here showing the login screen, the Kanban board, and drag-and-drop in action. This is the single most valuable addition you can make to this README — it lets anyone understand the app in seconds without running it._
-
-```
-![Kanban board](docs/screenshot-board.png)
-![Login screen](docs/screenshot-login.png)
-```
-
----
-
 ## 🚀 Getting Started
 
 ### Prerequisites

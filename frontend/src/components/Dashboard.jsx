@@ -8,6 +8,24 @@ import {
     useDroppable,
     closestCenter,
 } from '@dnd-kit/core';
+import { GripVertical, Trash2, Circle } from 'lucide-react';
+
+const columnColors = {
+    'To Do': '#94a3b8',
+    'In Progress': '#3b82f6',
+    'Blocked': '#ef4444',
+    'Done': '#10b981',
+};
+
+function initialsOf(name) {
+    if (!name) return '?';
+    return name.split(' ').map((p) => p[0]).slice(0, 2).join('').toUpperCase();
+}
+
+function PriorityBadge({ priority }) {
+    const cls = priority === 'High' ? 'badge-high' : priority === 'Low' ? 'badge-low' : 'badge-medium';
+    return <span className={`badge ${cls}`}>{priority}</span>;
+}
 
 function DraggableTask({ id, children }) {
     const { setNodeRef, transform, isDragging } = useDraggable({ id });
@@ -27,19 +45,8 @@ function DraggableTask({ id, children }) {
 function DragHandle({ id }) {
     const { attributes, listeners } = useDraggable({ id });
     return (
-        <div
-            {...listeners}
-            {...attributes}
-            style={{
-                cursor: 'grab',
-                fontSize: '12px',
-                color: '#999',
-                marginBottom: '2px',
-                userSelect: 'none',
-            }}
-            title="Drag to move"
-        >
-            ⠿
+        <div {...listeners} {...attributes} className="drag-handle" title="Drag to move">
+            <GripVertical size={14} />
         </div>
     );
 }
@@ -47,17 +54,7 @@ function DragHandle({ id }) {
 function DroppableColumn({ id, children }) {
     const { setNodeRef, isOver } = useDroppable({ id });
     return (
-        <div
-            ref={setNodeRef}
-            style={{
-                flex: 1,
-                background: isOver ? '#eef6ff' : '#f9f9f9',
-                borderRadius: '6px',
-                padding: '8px',
-                minHeight: '80px',
-                transition: 'background 0.15s',
-            }}
-        >
+        <div ref={setNodeRef} className={`column${isOver ? ' column-over' : ''}`}>
             {children}
         </div>
     );
@@ -90,6 +87,8 @@ function Dashboard({ token }) {
             .then((data) => setUsers(data))
             .catch((err) => console.error('Error fetching users:', err));
     }, [token]);
+
+    const findUser = (id) => users.find((u) => u.id === id || u.id === Number(id));
 
     const handleStatusChange = (taskId, newStatus) => {
         fetch(`${API_URL}/api/tasks/${taskId}`, {
@@ -220,47 +219,42 @@ function Dashboard({ token }) {
 
     return (
         <div className="dashboard">
-            <h2>Projects</h2>
+            <h2 className="page-title">Projects</h2>
             <ProjectForm onProjectAdded={handleProjectAdded} token={token} />
-            <div style={{ marginBottom: '12px', display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <div>
-                    <label style={{ marginRight: '6px', fontSize: '13px' }}>Filter by priority:</label>
-                    <select
-                        value={priorityFilter}
-                        onChange={(e) => setPriorityFilter(e.target.value)}
-                        style={{ fontSize: '13px' }}
-                    >
+            <div className="toolbar">
+                <div className="toolbar-field">
+                    <label>Priority</label>
+                    <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)}>
                         <option value="All">All</option>
                         <option value="Low">Low</option>
                         <option value="Medium">Medium</option>
                         <option value="High">High</option>
                     </select>
                 </div>
-                <div>
-                    <label style={{ marginRight: '6px', fontSize: '13px' }}>Search:</label>
+                <div className="toolbar-field toolbar-search">
+                    <label>Search</label>
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search tasks..."
-                        style={{ fontSize: '13px', padding: '3px 6px' }}
+                        placeholder="Search tasks by title or description..."
                     />
                 </div>
             </div>
             {projects.map((project) => (
                 <div key={project.id} className="project-card">
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h3 style={{ margin: 0 }}>{project.name}</h3>
-                        <button
-                            onClick={() => handleDeleteProject(project.id)}
-                            style={{ fontSize: '12px', color: '#e53935' }}
-                        >
+                    <div className="project-card-header">
+                        <div>
+                            <h3>{project.name}</h3>
+                            {project.description && <p className="project-desc">{project.description}</p>}
+                        </div>
+                        <button className="btn-danger-text" onClick={() => handleDeleteProject(project.id)}>
+                            <Trash2 size={13} style={{ verticalAlign: '-2px', marginRight: '4px' }} />
                             Delete Project
                         </button>
                     </div>
-                    <p>{project.description}</p>
                     <DndContext collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                        <div className="board">
                             {statuses.map((status) => {
                                 const columnTasks = tasks.filter((t) => {
                                     const query = searchQuery.trim().toLowerCase();
@@ -273,7 +267,11 @@ function Dashboard({ token }) {
                                 });
                                 return (
                                     <DroppableColumn key={status} id={status}>
-                                        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px' }}>{status} ({columnTasks.length})</h4>
+                                        <div className="column-header">
+                                            <span className="column-dot" style={{ background: columnColors[status] }} />
+                                            <span className="column-title">{status}</span>
+                                            <span className="column-count">{columnTasks.length}</span>
+                                        </div>
                                         {columnTasks
                                             .sort((a, b) => {
                                                 const order = { High: 1, Medium: 2, Low: 3 };
@@ -287,32 +285,27 @@ function Dashboard({ token }) {
                                             })
                                             .map((t) => {
                                                 const isOverdue = t.due_date && new Date(t.due_date) < new Date() && t.status !== 'Done';
+                                                const assignee = findUser(t.assigned_to);
                                                 return (
                                                     <DraggableTask key={t.id} id={t.id}>
-                                                        <div
-                                                            style={{
-                                                                background: 'white',
-                                                                border: isOverdue ? '1px solid #e53935' : '1px solid #ddd',
-                                                                borderRadius: '4px',
-                                                                padding: '6px',
-                                                                marginBottom: '6px',
-                                                                fontSize: '13px'
-                                                            }}
-                                                        >
-                                                            <DragHandle id={t.id} />
-                                                            {t.title}
+                                                        <div className={`task-card${isOverdue ? ' task-overdue' : ''}`}>
+                                                            <div className="task-top">
+                                                                <DragHandle id={t.id} />
+                                                                <PriorityBadge priority={t.priority || 'Medium'} />
+                                                            </div>
+                                                            <div className="task-title">{t.title}</div>
                                                             <textarea
                                                                 value={t.description || ''}
                                                                 onChange={(e) => handleDescriptionChange(t.id, e.target.value)}
                                                                 placeholder="Add description..."
-                                                                style={{ display: 'block', width: '100%', maxWidth: '160px', marginTop: '4px', padding: '3px', fontSize: '11px', fontFamily: 'inherit', border: '1px solid #eee', borderRadius: '3px', resize: 'vertical' }}
+                                                                className="task-desc-input"
                                                                 rows={2}
                                                             />
-                                                            <div style={{ fontSize: '11px', marginTop: '4px', display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                                            <div className="task-row">
                                                                 <select
                                                                     value={t.priority || 'Medium'}
                                                                     onChange={(e) => handlePriorityChange(t.id, e.target.value)}
-                                                                    style={{ fontSize: '11px' }}
+                                                                    className="task-priority-select"
                                                                 >
                                                                     <option value="Low">Low</option>
                                                                     <option value="Medium">Medium</option>
@@ -322,36 +315,37 @@ function Dashboard({ token }) {
                                                                     type="date"
                                                                     value={t.due_date ? t.due_date.split('T')[0] : ''}
                                                                     onChange={(e) => handleDueDateChange(t.id, e.target.value)}
-                                                                    style={{ fontSize: '11px', color: isOverdue ? '#e53935' : 'inherit', fontWeight: isOverdue ? 'bold' : 'normal' }}
+                                                                    className={`task-date${isOverdue ? ' task-date-overdue' : ''}`}
                                                                 />
                                                             </div>
-                                                            <div style={{ fontSize: '11px', marginTop: '4px' }}>
-                                                                <select
-                                                                    value={t.assigned_to || ''}
-                                                                    onChange={(e) => handleAssigneeChange(t.id, e.target.value)}
-                                                                    style={{ fontSize: '11px', width: '100%' }}
-                                                                >
-                                                                    <option value="">Unassigned</option>
-                                                                    {users.map((u) => (
-                                                                        <option key={u.id} value={u.id}>{u.name}</option>
-                                                                    ))}
-                                                                </select>
+                                                            <div className="task-row">
+                                                                <div className="assignee-pill">
+                                                                    <div className="assignee-avatar">
+                                                                        {assignee ? initialsOf(assignee.name) : <Circle size={10} />}
+                                                                    </div>
+                                                                    <select
+                                                                        value={t.assigned_to || ''}
+                                                                        onChange={(e) => handleAssigneeChange(t.id, e.target.value)}
+                                                                    >
+                                                                        <option value="">Unassigned</option>
+                                                                        {users.map((u) => (
+                                                                            <option key={u.id} value={u.id}>{u.name}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
                                                             </div>
-                                                            <div style={{ marginTop: '4px' }}>
+                                                            <div className="task-footer">
                                                                 <select
                                                                     value={t.status}
                                                                     onChange={(e) => handleStatusChange(t.id, e.target.value)}
-                                                                    style={{ fontSize: '12px' }}
+                                                                    className="task-status-select"
                                                                 >
                                                                     {statuses.map((s) => (
                                                                         <option key={s} value={s}>{s}</option>
                                                                     ))}
                                                                 </select>
-                                                                <button
-                                                                    onClick={() => handleDeleteTask(t.id)}
-                                                                    style={{ marginLeft: '4px', fontSize: '12px' }}
-                                                                >
-                                                                    Delete
+                                                                <button className="btn-icon" onClick={() => handleDeleteTask(t.id)} title="Delete task">
+                                                                    <Trash2 size={14} />
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -364,7 +358,7 @@ function Dashboard({ token }) {
                         </div>
                     </DndContext>
                     <TaskForm projectId={project.id} onTaskAdded={(newTask) => setTasks([...tasks, newTask])} token={token} users={users} />
-                    <p>Starts: {project.start_date?.slice(0, 10)} | Ends: {project.end_date?.slice(0, 10)}</p>
+                    <p className="project-dates">Starts: {project.start_date?.slice(0, 10) || '—'} · Ends: {project.end_date?.slice(0, 10) || '—'}</p>
                 </div>
             ))}
         </div>

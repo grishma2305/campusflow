@@ -1,5 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL;
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
 
 function ProjectForm({ onProjectAdded, token }) {
     const [name, setName] = useState('');
@@ -46,39 +47,39 @@ function ProjectForm({ onProjectAdded, token }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ marginBottom: '20px', padding: '12px', border: '1px solid #ddd', borderRadius: '6px' }}>
-            <h3 style={{ marginTop: 0 }}>New Project</h3>
-            {error && <p style={{ color: '#e53935', fontSize: '13px' }}>{error}</p>}
+        <form onSubmit={handleSubmit} className="new-project-card">
+            <div className="new-project-header">
+                <h3>New Project</h3>
+            </div>
+            {error && <div className="form-error">{error}</div>}
             <input
                 type="text"
                 placeholder="Project name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                style={{ display: 'block', width: '100%', maxWidth: '300px', marginBottom: '6px', padding: '4px' }}
+                className="project-name-input"
+                style={{ width: '100%', marginBottom: '10px' }}
             />
             <textarea
                 placeholder="Description (optional)"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                style={{ display: 'block', width: '100%', maxWidth: '300px', marginBottom: '6px', padding: '4px' }}
                 rows={2}
             />
-            <div style={{ marginBottom: '6px' }}>
-                <label style={{ fontSize: '12px', marginRight: '4px' }}>Start:</label>
-                <input
-                    type="date"
-                    value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
-                    style={{ marginRight: '12px' }}
-                />
-                <label style={{ fontSize: '12px', marginRight: '4px' }}>End:</label>
-                <input
-                    type="date"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                />
+            <div className="new-project-grid" style={{ marginTop: '10px' }}>
+                <div />
+                <div>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px' }}>Start date</label>
+                    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} style={{ width: '100%' }} />
+                </div>
+                <div>
+                    <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--color-text-muted)', display: 'block', marginBottom: '4px' }}>End date</label>
+                    <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} style={{ width: '100%' }} />
+                </div>
             </div>
-            <button type="submit">Add Project</button>
+            <button type="submit" className="btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', marginTop: '6px' }}>
+                <Plus size={15} /> Add Project
+            </button>
         </form>
     );
 }

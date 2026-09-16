@@ -1,5 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL;
 import { useState } from 'react';
+import { Plus } from 'lucide-react';
 
 function TaskForm({ projectId, onTaskAdded, token, users }) {
     const [title, setTitle] = useState('');
@@ -44,48 +45,43 @@ function TaskForm({ projectId, onTaskAdded, token, users }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ marginTop: '8px' }}>
-            {error && <p style={{ color: '#e53935', fontSize: '12px', margin: '0 0 4px 0' }}>{error}</p>}
-            <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="New task title"
-                style={{ padding: '4px', marginRight: '4px' }}
-            />
+        <form onSubmit={handleSubmit} className="add-task-form">
+            {error && <div className="form-error">{error}</div>}
+            <div className="add-task-row">
+                <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="New task title"
+                    className="add-task-title"
+                />
+                <select value={priority} onChange={(e) => setPriority(e.target.value)}>
+                    <option value="Low">Low</option>
+                    <option value="Medium">Medium</option>
+                    <option value="High">High</option>
+                </select>
+                <input
+                    type="date"
+                    value={dueDate}
+                    onChange={(e) => setDueDate(e.target.value)}
+                />
+                <select value={assignedTo} onChange={(e) => setAssignedTo(e.target.value)}>
+                    <option value="">Unassigned</option>
+                    {users && users.map((u) => (
+                        <option key={u.id} value={u.id}>{u.name}</option>
+                    ))}
+                </select>
+                <button type="submit" className="btn-secondary" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    <Plus size={14} /> Add
+                </button>
+            </div>
             <textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Description (optional)"
-                style={{ display: 'block', width: '100%', maxWidth: '300px', marginTop: '4px', marginBottom: '4px', padding: '4px', fontSize: '12px', fontFamily: 'inherit' }}
+                className="add-task-desc"
                 rows={2}
             />
-            <select
-                value={priority}
-                onChange={(e) => setPriority(e.target.value)}
-                style={{ marginRight: '4px' }}
-            >
-                <option value="Low">Low</option>
-                <option value="Medium">Medium</option>
-                <option value="High">High</option>
-            </select>
-            <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                style={{ marginRight: '4px' }}
-            />
-            <select
-                value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-                style={{ marginRight: '4px' }}
-            >
-                <option value="">Unassigned</option>
-                {users && users.map((u) => (
-                    <option key={u.id} value={u.id}>{u.name}</option>
-                ))}
-            </select>
-            <button type="submit">Add Task</button>
         </form>
     );
 }

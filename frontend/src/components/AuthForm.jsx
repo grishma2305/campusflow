@@ -1,5 +1,6 @@
 const API_URL = import.meta.env.VITE_API_URL;
 import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
 
 function AuthForm({ onAuthSuccess }) {
     const [isSignup, setIsSignup] = useState(false);
@@ -47,43 +48,52 @@ function AuthForm({ onAuthSuccess }) {
     };
 
     return (
-        <div style={{ maxWidth: '360px', margin: '80px auto', padding: '24px', border: '1px solid #ddd', borderRadius: '8px' }}>
-            <h2 style={{ marginTop: 0, textAlign: 'center' }}>{isSignup ? 'Create an account' : 'Log in'}</h2>
-            {error && <p style={{ color: '#e53935', fontSize: '13px' }}>{error}</p>}
-            <form onSubmit={handleSubmit}>
+        <div className="auth-card">
+            <h2 className="auth-card-title">{isSignup ? 'Create your account' : 'Welcome back'}</h2>
+            <p className="auth-card-subtitle">
+                {isSignup ? 'Start organizing your team\u2019s work in minutes.' : 'Log in to see your projects.'}
+            </p>
+            {error && <div className="form-error">{error}</div>}
+            <form onSubmit={handleSubmit} className="auth-form">
                 {isSignup && (
-                    <input
-                        type="text"
-                        placeholder="Name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        style={{ display: 'block', width: '100%', marginBottom: '8px', padding: '6px' }}
-                    />
+                    <div className="field">
+                        <label>Full name</label>
+                        <input
+                            type="text"
+                            placeholder="Jane Doe"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                        />
+                    </div>
                 )}
-                <input
-                    type="email"
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    style={{ display: 'block', width: '100%', marginBottom: '8px', padding: '6px' }}
-                />
-                <input
-                    type="password"
-                    placeholder="Password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    style={{ display: 'block', width: '100%', marginBottom: '12px', padding: '6px' }}
-                />
-                <button type="submit" disabled={loading} style={{ width: '100%', padding: '8px' }}>
-                    {loading ? 'Please wait...' : isSignup ? 'Sign up' : 'Log in'}
+                <div className="field">
+                    <label>Email</label>
+                    <input
+                        type="email"
+                        placeholder="you@example.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                </div>
+                <div className="field">
+                    <label>Password</label>
+                    <input
+                        type="password"
+                        placeholder="••••••••"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                </div>
+                <button type="submit" className="btn-primary btn-block" disabled={loading}>
+                    {loading ? <Loader2 size={16} className="spin" /> : isSignup ? 'Create account' : 'Log in'}
                 </button>
             </form>
-            <p style={{ textAlign: 'center', fontSize: '13px', marginTop: '12px' }}>
+            <p className="auth-switch">
                 {isSignup ? 'Already have an account?' : "Don't have an account?"}{' '}
                 <button
                     type="button"
+                    className="link-btn"
                     onClick={() => { setIsSignup(!isSignup); setError(''); }}
-                    style={{ border: 'none', background: 'none', color: '#1a73e8', cursor: 'pointer', padding: 0, fontSize: '13px' }}
                 >
                     {isSignup ? 'Log in' : 'Sign up'}
                 </button>

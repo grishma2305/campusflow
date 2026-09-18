@@ -163,6 +163,17 @@ campusflow/
 
 ---
 
+## 📸 Screenshots
+
+**Login**
+![Login screen](docs/screenshot/login.png)
+
+**Kanban Board**
+![Kanban board](docs/screenshot/kanban-board-1.png)
+![Kanban board — task detail](docs/screenshot/kanban-board-2.png)
+
+---
+
 ## 🔌 API Overview
 
 All routes are prefixed with `/api`. Routes marked 🔒 require an `Authorization: Bearer <token>` header.

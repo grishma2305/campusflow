@@ -169,8 +169,8 @@ campusflow/
 ![Login screen](docs/screenshot/login.png)
 
 **Kanban Board**
-![Kanban board](docs/screenshot/kanban-board-1.png)
-![Kanban board — task detail](docs/screenshot/kanban-board-2.png)
+![Kanban board](docs/screenshot/kanban board 1.png)
+![Kanban board — task detail](docs/screenshot/kanban board 2.png)
 
 ---
 

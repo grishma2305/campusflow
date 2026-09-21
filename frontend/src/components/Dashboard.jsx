@@ -31,12 +31,13 @@ function DraggableTask({ id, children }) {
     const { setNodeRef, transform, isDragging } = useDraggable({ id });
     const style = {
         transform: transform ? `translate(${transform.x}px, ${transform.y}px)` : undefined,
-        opacity: isDragging ? 0.4 : 1,
+        opacity: isDragging ? 0.5 : 1,
         zIndex: isDragging ? 999 : 'auto',
         position: isDragging ? 'relative' : 'static',
+        transition: isDragging ? 'none' : 'transform 0.2s ease',
     };
     return (
-        <div ref={setNodeRef} style={style}>
+        <div ref={setNodeRef} style={style} className={isDragging ? 'task-dragging' : ''}>
             {children}
         </div>
     );
